@@ -31,17 +31,21 @@ using namespace rw::core;
 RwsPluginTemplate::RwsPluginTemplate() :
   RobWorkStudioPlugin("RwsPluginTemplate", QIcon(":/picon.png"))
 {
-  // Create GUI
+  /*
+   * Create GUI instance
+   */
   _ui = new Ui::PluginWidget;
   _ui->setupUi(this);
   
-  /* polacz kontrolki z metodami */
-  //connect(kursorButton, SIGNAL(clicked()), this, SLOT(kursor()));
-  //connect(ikButton, SIGNAL(clicked()), this, SLOT(ik()));
+  /*
+   * Connect widgets (e.g. buttons) to methods in the class.
+   */
+  connect(_ui->testButton, SIGNAL(clicked()), this, SLOT(onTestButtonClicked()));
 }
 
 
 RwsPluginTemplate::~RwsPluginTemplate() {
+  delete _ui;
 }
 
 
@@ -50,91 +54,52 @@ void RwsPluginTemplate::initialize() {
 
 
 void RwsPluginTemplate::open(rw::models::WorkCell* workcell) {
-  /* zapisz wskaźnik do komórki roboczej i domyślny stan */
+  /*
+   * This method is called when a workcell is loaded in RWS environment.
+   * Save the argument as the private property for further use.
+   */
   _wc = workcell;
   
-  /* znajdź robota */
-  /*_robot = _wc->findDevice("ur5");
-  if (_robot) {
-    Log::log().info() << "Znaleziono urządzenie: " << _robot->getName() << endl;
+  /*
+   * Example:
+   * This is how to find a device (e.g. a robot in the workcell.
+   * 'device' should be declared as a private property if you would like
+   *  to access it elsewhere in the class.
+   */
+  rw::models::Device::Ptr robot = _wc->findDevice("ur5");
+  if (robot) {
+    Log::log().info() << "Device found: " << robot->getName() << endl;
+  } else {
+    Log::log().warning() << "Device not found!" << endl;
   }
   
-  Frame* kursor = _wc->findFrame("kursor");
-  if (kursor)
-    getRobWorkStudio()->getWorkCellScene()->setFrameAxisVisible(true, kursor);*/
+  /*
+   * Example:
+   * This is how to find a frame in the workcell.
+   * 'frame' should be declared as a private property if you would like
+   *  to access it elsewhere in the class.
+   * If you want to change the frame pose, it should be defined as
+   * a Movable frame type in the workcell.
+   */
+  rw::kinematics::Frame* frame = _wc->findFrame("frame");
+  // rw::kinematics::MovableFrame* frame = _wc->findFrame<rw::kinematics::MovableFrame>("frame");
+  if (frame) {
+    // Example: sets the frame axes visible in the RWS environment.
+    getRobWorkStudio()->getWorkCellScene()->setFrameAxisVisible(true, frame);
+  }
 }
 
 
 void RwsPluginTemplate::close() {
+  /*
+   * Define what happens when the workcell is closed.
+   * You will likely want to clear the pointers to objects that
+   * no longer exist.
+   */
   _wc = nullptr;
 }
 
 
-
-
-
-
-void RwsPluginTemplate::kursor() {
-  MovableFrame* kursor = _wc->findFrame<MovableFrame>("kursor");
-  if (!kursor) {
-    Log::log().warning() << "Nie znaleziono ukladu kursor!" << endl;
-    return;
-  }
-  
-  if (!_robot) {
-    Log::log().warning() << "Nie znaleziono robota!" << endl;
-    return;
-  }
-  
-  State state = getRobWorkStudio()->getState();
-  kursor->setTransform(_robot->baseTend(state), state);
-  getRobWorkStudio()->setState(state);
-  
-  QSampler::Ptr sampler = QSampler::makeUniform(_robot);
-  Log::log().info() << sampler->sample() << endl;
-}
-
-
-void RwsPluginTemplate::ik() {
-  Frame* kursor = _wc->findFrame("kursor");
-  if (!kursor) {
-    Log::log().warning() << "Nie znaleziono ukladu kursor!" << endl;
-    return;
-  }
-  
-  State state = getRobWorkStudio()->getState();
-  Transform3D<> Tkursor = Kinematics::worldTframe(kursor, state);
-  Log::log().info() << "Wspolrzedne: " << Tkursor << endl;
-  
-  Metric<Transform3D<>>::Ptr metric = MetricFactory::makeTransform3DMetric<double>(1.0, 1.0);
-  
-  Q q = _robot->getQ(state);
-  int iteracje = 0;
-  double error;
-  do {
-    Transform3D<> Ttcp = _robot->baseTend(state);
-    Transform3D<> Terror = inverse(Ttcp) * Tkursor;
-    VelocityScrew6D<> Verror(Terror);
-    //EAA<> eaa(Terror(2,1), Terror(0,2), Terror(1,0));
-    //VelocityScrew6D<> Verror(Terror.P(), eaa);
-    //Verror = Ttcp.R() * Verror;
-    Log::log().info() << Verror << endl;
-    
-    Jacobian jacobian = _robot->baseJCend(state)->get(state);
-    Eigen::MatrixXd jac = jacobian.e();
-    
-    Eigen::VectorXd temp = jac.inverse() * Verror.e();
-    Q dq(temp);
-    q += dq;
-    
-    _robot->setQ(q, state);
-    
-    error = metric->distance(Terror);
-    ++iteracje;
-  } while (error > 0.001 && iteracje < 1);
-  
-  Log::log().info() << "Ilość iteracji: " << iteracje << " Blad: " << error << endl;
-  
-  _robot->setQ(q, state);
-  getRobWorkStudio()->setState(state);
+void RwsPluginTemplate::onTestButtonClicked() {
+  Log::log().info() << "Test button clicked!" << endl;
 }

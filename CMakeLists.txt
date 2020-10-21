@@ -58,9 +58,24 @@ add_definitions(-std=c++11)
 # CHANGE FILE NAMES AS NECCESARY
 #
 ########################################################################
-SET(UisFiles rws_plugin_template.ui)                    # UI files
-SET(MocHeaders rws_plugin_template.hpp)                 # HPP files
-SET(SrcFiles rws_plugin_template.cpp)                   # CPP files
+
+# UI files
+SET(
+  UisFiles
+  src/rws_plugin_template.ui
+)
+
+# HPP files
+SET(
+  MocHeaders
+  src/rws_plugin_template.hpp
+) 
+
+# CPP files        
+SET(
+  SrcFiles
+  src/rws_plugin_template.cpp
+) 
 
 ########################################################################
 #
@@ -70,7 +85,10 @@ SET(SrcFiles rws_plugin_template.cpp)                   # CPP files
 SET(MocSrcFiles)
 QT5_WRAP_CPP(MocSrcFiles ${MocHeaders})
 SET(RccSrcFiles)
-QT5_ADD_RESOURCES(RccSrcFiles resources.qrc)
+QT5_ADD_RESOURCES(
+  RccSrcFiles
+  src/resources.qrc
+)
 QT5_WRAP_UI(UiHeaders ${UisFiles})
 
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -85,7 +103,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # UNCOMMMENT RobWorkSim IF REQUIRED.
 #
 ########################################################################
-add_library(rws_plugin_template MODULE ${Src} ${MocSrcFiles} ${RccSrcFiles} ${UiHeaders})
+add_library(rws_plugin_template MODULE ${SrcFiles} ${MocSrcFiles} ${RccSrcFiles} ${UiHeaders})
 target_link_libraries(rws_plugin_template -lGL -lGLU -lglut -lm
   ${ROBWORKSTUDIO_LIBRARIES}
   ${ROBWORK_LIBRARIES}

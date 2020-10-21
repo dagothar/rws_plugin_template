@@ -3,6 +3,8 @@
 #include <rws/RobWorkStudioPlugin.hpp>
 #include "ui_rws_plugin_template.h"
 #include <rw/models/WorkCell.hpp>
+#include <rw/models/Device.hpp>
+#include <rw/kinematics/Frame.hpp>
 
 /*//////////////////////////////////////////////////////////////////////
  * 
